@@ -14,7 +14,7 @@ const asyncRequest = (options, data) => new Promise((resolve, reject) => {
 		res.setEncoding('utf8');
 		res.on('data', chunk => {
 		// http.request require a on data handler
-			console.log(chunk)
+//			console.log(chunk)
 		});
 		res.on('end', () => resolve());
 	});
