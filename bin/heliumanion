@@ -68,7 +68,22 @@ const checkIfServerExistsSpawnIfNot = async (port) => {
 	}
 }
 
+const apiOpen = async url => {
+	const port = program.port || defaultPort;
+	await checkIfServerExistsSpawnIfNot(port);
 
+	await asyncRequest({
+		method: 'POST',
+		path: '/api/open',
+		host: '127.0.0.1',
+		port,
+		headers: {
+			'Content-Type': 'application/json',
+		}
+	}, {
+		url
+	});
+}
 
 const defaultPort = 2020;
 
@@ -78,22 +93,7 @@ program
 
 program
 	.command('open [url]')
-	.action(async url => {
-		const port = program.port || defaultPort;
-		await checkIfServerExistsSpawnIfNot(port);
-
-		await asyncRequest({
-			method: 'POST',
-			path: '/api/open',
-			host: '127.0.0.1',
-			port,
-			headers: {
-				'Content-Type': 'application/json',
-			}
-		}, {
-			url
-		});
-	});
+	.action(apiOpen);
 
 program
 	.command('new [url]')
@@ -114,4 +114,9 @@ program
 		});
 	});
 
+program
+	.command('* [url]')
+	.action(apiOpen);
+
 program.parse(process.argv);
+
