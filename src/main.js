@@ -51,8 +51,14 @@ const main = async () => {
 		});	
 	});
 
-	app.post('/api/createWindow', (req, res) => {
-		createWindow();
+	app.post('/api/new', (req, res) => {
+		if(!req.is('application/json')) {
+			return res.status(400).send({
+				"message": "You need to set content type to application/json"
+			});
+		}
+
+		createWindow(req.body.url);
 		res.send({
 			'message': 'new window created'
 		});
