@@ -68,13 +68,39 @@ const checkIfServerExistsSpawnIfNot = async (port) => {
 	}
 }
 
+const replaceYoutubeLinksWithYoutbeEmbedded = url =>
+	url.replace(/^.*youtube\.com\/watch\?v\=([a-zA-Z0-9]+).*$/, (match, p1) =>
+		`https://www.youtube.com/embed/${p1}`
+	);
+
 const apiOpen = async url => {
 	const port = program.port || defaultPort;
 	await checkIfServerExistsSpawnIfNot(port);
 
+	url = replaceYoutubeLinksWithYoutbeEmbedded(url);
+
 	await asyncRequest({
 		method: 'POST',
 		path: '/api/open',
+		host: '127.0.0.1',
+		port,
+		headers: {
+			'Content-Type': 'application/json',
+		}
+	}, {
+		url
+	});
+}
+
+const apiNew = async url => {
+	const port = program.port || defaultPort;
+	await checkIfServerExistsSpawnIfNot(port);
+
+	url = replaceYoutubeLinksWithYoutbeEmbedded(url);
+
+	await asyncRequest({
+		method: 'POST',
+		path: '/api/new',
 		host: '127.0.0.1',
 		port,
 		headers: {
@@ -91,32 +117,8 @@ program
 	.version('0.1.0')
 	.option('-p, --port [port]', 'Webserver port [default to 2020]', defaultPort)
 
-program
-	.command('open [url]')
-	.action(apiOpen);
-
-program
-	.command('new [url]')
-	.action(async url => {
-		const port = program.port || defaultPort;
-		await checkIfServerExistsSpawnIfNot(port);
-
-		await asyncRequest({
-			method: 'POST',
-			path: '/api/new',
-			host: '127.0.0.1',
-			port,
-			headers: {
-				'Content-Type': 'application/json',
-			}
-		}, {
-			url
-		});
-	});
-
-program
-	.command('* [url]')
-	.action(apiOpen);
+program.command('open [url]').action(apiOpen);
+program.command('new [url]').action(apiNew);
+program.command('* [url]').action(apiOpen);
 
 program.parse(process.argv);
-
