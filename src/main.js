@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require('electron'),
 		path = require('path'),
+		process = require('process'),
 		express = require('express'),
 		bodyParser = require('body-parser');
 
@@ -40,18 +41,18 @@ const appOnPromise = (eventType) => new Promise(resolve =>
 const main = async () => {
 	await appOnPromise('ready');
 
-	const app = express();
+	const apiApp = express();
 
-	app.use(bodyParser.json());
-	app.use(bodyParser.urlencoded({extended: true}));
+	apiApp.use(bodyParser.json());
+	apiApp.use(bodyParser.urlencoded({extended: true}));
 
-	app.get('/api/status', (req, res) => {
+	apiApp.get('/api/status', (req, res) => {
 		res.send({
 			'status': 'ok'
 		});	
 	});
 
-	app.post('/api/new', (req, res) => {
+	apiApp.post('/api/new', (req, res) => {
 		if(!req.is('application/json')) {
 			return res.status(400).send({
 				"message": "You need to set content type to application/json"
@@ -64,7 +65,7 @@ const main = async () => {
 		});
 	});
 
-	app.post('/api/open', (req, res) => {
+	apiApp.post('/api/open', (req, res) => {
 		if(!req.is('application/json')) {
 			return res.status(400).send({
 				"message": "You need to set content type to application/json"
@@ -81,8 +82,14 @@ const main = async () => {
 		});
 	});
 
+	apiApp.post('/api/quit', (req, res) => {
+		res.send({
+			'message': 'quitting...'
+		});
+		app.exit(0);
+	});
 
-	await app.listen(port);
+	await apiApp.listen(port);
 	console.log(`Server api started on ${port}`);
 };
 

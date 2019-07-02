@@ -14,7 +14,7 @@ const asyncRequest = (options, data) => new Promise((resolve, reject) => {
 		res.setEncoding('utf8');
 		res.on('data', chunk => {
 		// http.request require a on data handler
-//			console.log(chunk)
+			console.log(chunk)
 		});
 		res.on('end', () => resolve());
 	});
@@ -111,6 +111,21 @@ const apiNew = async url => {
 	});
 }
 
+const apiQuit = async () => {
+	const port = program.port || defaultPort;
+	await checkIfServerExistsSpawnIfNot(port);
+
+	await asyncRequest({
+		method: 'POST',
+		path: '/api/quit',
+		host: '127.0.0.1',
+		port,
+		headers: {
+			'Content-Type': 'application/json',
+		}
+	});
+}
+
 const defaultPort = 2020;
 
 program
@@ -119,6 +134,7 @@ program
 
 program.command('open [url]').action(apiOpen);
 program.command('new [url]').action(apiNew);
+program.command('quit').action(apiQuit);
 program.command('* [url]').action(apiOpen);
 
 program.parse(process.argv);
