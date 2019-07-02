@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+
+const http = require('http'),
+		process = require('process'),
+		path = require('path'),
+		commander = require('commander'),
+		program = new commander.Command();
+
+const asyncRequest = (options, data) => new Promise((resolve, reject) => {
+	const req = http.request(options, res => {
+		res.setEncoding('utf8');
+		res.on('data', chunk => {
+		// http.request require a on data handler
+//			console.log(chunk)
+		});
+		res.on('end', () => resolve());
+	});
+	req.on('error', reject);
+	if(data) {
+		if(typeof data !== 'string') {
+			data = JSON.stringify(data);
+		}
+		req.write(data);
+	}
+	req.end();
+});
+
+const checkIfServerExists = async (port) => {
+	try {
+		await asyncRequest({
+			method: 'GET',
+			path: '/api/status',
+			host: '127.0.0.1',
+			port,
+		});
+
+		return true;
+	} catch(e) {
+		return false;
+	}
+}
+
+const asyncTimeout = time => new Promise(resolve =>
+	setTimeout(() => resolve(), time)
+);
+
+const defaultPort = 2020;
+
+program
+	.version('0.1.0')
+	.option('-p, --port [port]', 'Webserver port [default to 2020]', defaultPort)
+
+program
+	.command('open [url]')
+	.action(async url => {
+		const port = program.port || defaultPort;
+
+		if(!(await checkIfServerExists(port))) {
+			console.log('No server found, spawing server');
+
+			const electron = require('electron'),
+					{ spawn } = require('child_process')
+
+			const electronAppPath = path.join(__dirname, '../src/main.js');
+			const child = spawn(electron, [electronAppPath], {
+				detached: true,
+				stdio: 'ignore',
+			});
+			child.unref();
+		
+			await asyncTimeout(1500);
+
+			if(!(await checkIfServerExists(port))) {
+				console.error('Still no server found');
+				return process.exit(1);	
+			}
+		}
+
+		await asyncRequest({
+			method: 'POST',
+			path: '/api/open',
+			host: '127.0.0.1',
+			port,
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		}, {
+			url
+		});
+	});
+
+program.parse(process.argv);
