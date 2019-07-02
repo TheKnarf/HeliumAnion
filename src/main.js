@@ -4,11 +4,11 @@ const { app, BrowserWindow } = require('electron'),
 		bodyParser = require('body-parser');
 
 const port = 2020;
+let lastWindow = null;
 
 const createWindow = (url) => {
 	const size = 35;
-
-	let win = new BrowserWindow({
+	const win = new BrowserWindow({
 		width: size * 16,
 		height: size * 9,
 		webPreferences: {
@@ -29,6 +29,8 @@ const createWindow = (url) => {
 	} else {
 		win.loadURL(url);
 	}
+
+	lastWindow = win;
 };
 
 const appOnPromise = (eventType) => new Promise(resolve =>
@@ -63,7 +65,11 @@ const main = async () => {
 			});
 		}
 
-		createWindow(req.body.url);
+		if(lastWindow === null) {
+			createWindow(req.body.url);
+		} else {
+			lastWindow.loadURL(req.body.url);
+		}
 		res.send({
 			'message': 'new window created'
 		});
