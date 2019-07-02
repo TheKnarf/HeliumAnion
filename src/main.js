@@ -6,9 +6,11 @@ const { app, BrowserWindow } = require('electron'),
 const port = 2020;
 
 const createWindow = (url) => {
+	const size = 35;
+
 	let win = new BrowserWindow({
-		width: 800,
-		height: 600,
+		width: size * 16,
+		height: size * 9,
 		webPreferences: {
 			nodeIntegration: true
 		},
