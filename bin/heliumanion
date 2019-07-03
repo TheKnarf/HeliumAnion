@@ -69,7 +69,7 @@ const checkIfServerExistsSpawnIfNot = async (port) => {
 }
 
 const replaceYoutubeLinksWithYoutbeEmbedded = url =>
-	url.replace(/^.*youtube\.com\/watch\?v\=([a-zA-Z0-9]+).*$/, (match, p1) =>
+	url.replace(/^.*youtube\.com\/watch\?v\=([^&]+).*$/, (match, p1) =>
 		`https://www.youtube.com/embed/${p1}`
 	);
 
